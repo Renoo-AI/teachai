@@ -21,13 +21,36 @@ function connectionOptions(env = process.env) {
   return { connectionString: connection.toString(), ssl: local ? false : ssl };
 }
 
+// Hosts without IPv6 routing (Render) fail with ENETUNREACH when the name resolves to an IPv6 address first.
+// Resolve an IPv4 address ourselves and connect to it, keeping the real host name for TLS verification.
+async function ipv4Options() {
+  const opts = connectionOptions();
+  const u = new URL(opts.connectionString);
+  const host = u.hostname.replace(/^\[|\]$/g, '');
+  if (!opts.ssl || require('net').isIP(host)) return opts;
+  try {
+    const [addr] = await require('dns').promises.resolve4(host);
+    if (!addr) throw new Error('no A record');
+    return {
+      host: addr, port: Number(u.port) || 5432, database: decodeURIComponent(u.pathname.slice(1)),
+      user: decodeURIComponent(u.username), password: decodeURIComponent(u.password),
+      ssl: { ...opts.ssl, servername: host },
+    };
+  } catch (e) {
+    console.warn('[db] no IPv4 address for ' + host + ' (' + e.message + '): using the normal connection');
+    return opts;
+  }
+}
+
 function init() {
   if (!ready) {
     const { Pool } = require('pg');
-    // Timeouts matter: a database that does not answer must produce an error, never a request that hangs for ever.
-    pool = new Pool({ ...connectionOptions(), max: 3, connectionTimeoutMillis: 8000, idleTimeoutMillis: 30000, query_timeout: 15000 });
-    pool.on('error', (e) => console.error('database connection error:', e.message));
-    ready = pool.query(`
+    ready = ipv4Options().then((opts) => {
+      console.log('[db] connecting to ' + (opts.host || new URL(opts.connectionString).hostname));
+      // Timeouts matter: a database that does not answer must produce an error, never a request that hangs for ever.
+      pool = new Pool({ ...opts, max: 3, connectionTimeoutMillis: 8000, idleTimeoutMillis: 30000, query_timeout: 15000 });
+      pool.on('error', (e) => console.error('database connection error:', e.message));
+      return pool.query(`
       CREATE TABLE IF NOT EXISTS exams (id text PRIMARY KEY, data jsonb NOT NULL, updated_at bigint NOT NULL);
       CREATE TABLE IF NOT EXISTS waitlist (email text PRIMARY KEY, role text, lang text, at text);
       CREATE TABLE IF NOT EXISTS messages (id serial PRIMARY KEY, at text, name text, email text, message text, lang text, done boolean DEFAULT false);
@@ -44,6 +67,7 @@ function init() {
       ALTER TABLE docs ENABLE ROW LEVEL SECURITY;
       ALTER TABLE logs ENABLE ROW LEVEL SECURITY;
     `);
+    });
     ready.catch((e) => { console.error('database setup failed:', e.message); ready = null; });
   }
   return ready;
