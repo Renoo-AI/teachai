@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam · Teach.ai</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FAF8F4">
+<link rel="icon" href="/brand/favicon.ico" sizes="any">
+<link rel="icon" id="fav-svg" type="image/svg+xml" href="/brand/icon.svg">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script src="/brand.js"></script>
+<script src="/theme.js"></script>
+<link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/studio.css">
+<link rel="stylesheet" href="/app.css">
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/picker.css">
+</head>
+<body class="app editor">
+
+<header class="appbar ed-bar no-print">
+  <a class="brand" href="/app" aria-label="Teach.ai"><span class="brand-mark" aria-hidden="true"></span><span>Teach<span class="dot">.</span>ai</span></a>
+  <div class="doc">
+    <span id="doc-name" class="doc-title" dir="auto"></span>
+    <span id="saved" class="saved" role="status" aria-live="polite"></span>
+  </div>
+  <span id="viewonly" class="viewonly" hidden data-icon="eye" data-i18n="top.viewonly"></span>
+
+  <div class="ed-center">
+    <div class="seg" role="group" data-i18n-aria="studio.previewmode">
+      <button id="mode-edit" type="button" class="seg-b on" aria-pressed="true" data-icon="edit"><span data-i18n="ed.view.edit"></span></button>
+      <button id="mode-student" type="button" class="seg-b" aria-pressed="false" data-icon="eye"><span data-i18n="ed.view.student"></span></button>
+    </div>
+  </div>
+
+  <div class="ed-tools">
+    <button id="undo" class="icon-btn edit-only" type="button" data-i18n-title="ed.undo" data-i18n-aria="ed.undo" data-icon="undo" disabled></button>
+    <button id="redo" class="icon-btn edit-only" type="button" data-i18n-title="ed.redo" data-i18n-aria="ed.redo" data-icon="redo" disabled></button>
+    <span class="vsep edit-only"></span>
+
+    <details class="menu" id="share-menu">
+      <summary id="share-btn" class="icon-btn" role="button" data-i18n-title="top.share" data-i18n-aria="top.share" data-icon="share"></summary>
+      <div id="share" class="menu-pop share-pop">
+        <label class="lbl" for="view-link" data-icon="eye" data-i18n="share.view"></label>
+        <div class="share-row">
+          <input id="view-link" class="field" readonly dir="ltr">
+          <button class="icon-btn" type="button" data-copy="view-link" data-i18n-title="copy" data-i18n-aria="copy" data-icon="copy"></button>
+        </div>
+        <div id="edit-share">
+          <label class="lbl" for="edit-link" data-icon="key" data-i18n="share.edit"></label>
+          <div class="share-row">
+            <input id="edit-link" class="field" readonly dir="ltr">
+            <button class="icon-btn" type="button" data-copy="edit-link" data-i18n-title="copy" data-i18n-aria="copy" data-icon="copy"></button>
+          </div>
+        </div>
+        <p class="hint" data-icon="info" data-icon-size="14"><span data-i18n="share.hint"></span></p>
+      </div>
+    </details>
+
+    <details class="menu">
+      <summary class="btn outline small" role="button" data-icon="print"><span class="lab" data-i18n="ed.print"></span></summary>
+      <div class="menu-pop">
+        <button id="print-student" type="button" class="menu-item"><span class="mi-ico" data-icon="paper"></span><span><b data-i18n="ed.cs"></b><small data-i18n="ed.printsub"></small></span></button>
+        <button id="print-key" type="button" class="menu-item"><span class="mi-ico" data-icon="key"></span><span><b data-i18n="ed.ck"></b><small data-i18n="ed.keysub"></small></span></button>
+      </div>
+    </details>
+
+    <details class="menu">
+      <summary class="btn primary small" role="button" data-icon="download"><span class="lab" data-i18n="ed.export"></span></summary>
+      <div class="menu-pop">
+        <button id="pdf" type="button" class="menu-item"><span class="mi-ico" data-icon="filetext"></span><span><b data-i18n="ed.pdf"></b><small data-i18n="ed.pdfsub"></small></span></button>
+        <button id="word" type="button" class="menu-item"><span class="mi-ico" data-icon="file"></span><span><b data-i18n="ed.word"></b><small data-i18n="ed.wordsub"></small></span></button>
+      </div>
+    </details>
+
+    <span class="vsep"></span>
+    <div id="langsw" class="langsw" role="group" aria-label="Language"></div>
+    <span data-theme-picker></span>
+    <button type="button" class="icon-btn" data-settings data-i18n-title="set.btn" data-i18n-aria="set.btn" data-icon="settings" data-icon-size="20"></button>
+  </div>
+</header>
+
+<div id="demo" class="demo-strip no-print" hidden>
+  <span data-icon="alert"><b data-i18n="demo.a"></b></span><span data-i18n="demo.b"></span>
+  <button type="button" class="btn outline" data-settings data-icon="settings"><span data-i18n="ed.opensettings"></span></button>
+</div>
+
+<div class="studio">
+  <aside class="sidebar edit-only no-print">
+    <section class="side-card assistant">
+      <h2 data-icon="spark"><span data-i18n="ai.who"></span></h2>
+      <div id="as-log" class="as-log" aria-live="polite"></div>
+      <div id="as-chips" class="as-chips"></div>
+      <div class="as-box">
+        <textarea id="as-input" rows="3" data-i18n-ph="as.ph"></textarea>
+        <button id="as-send" type="button" class="as-send" data-i18n-aria="as.send" data-i18n-title="as.send" data-icon="send"></button>
+      </div>
+    </section>
+
+    <section class="side-card">
+      <h2 data-icon="plus"><span data-i18n="ed.add"></span></h2>
+      <div class="add-grid">
+        <button type="button" class="add-tile" data-add="mcq" data-icon="mcq" data-icon-size="20"><span data-i18n="type.mcq.short"></span></button>
+        <button type="button" class="add-tile" data-add="tf" data-icon="tf" data-icon-size="20"><span data-i18n="type.tf.short"></span></button>
+        <button type="button" class="add-tile" data-add="short" data-icon="short" data-icon-size="20"><span data-i18n="type.short.short"></span></button>
+        <button type="button" class="add-tile" data-add="essay" data-icon="essay" data-icon-size="20"><span data-i18n="type.essay.short"></span></button>
+      </div>
+    </section>
+
+    <section class="side-card">
+      <h2 data-icon="layout"><span data-i18n="ed.page"></span></h2>
+      <label class="lbl" for="design-sel" data-i18n="ed.design"></label>
+      <select id="design-sel" class="field"></select>
+      <div class="pg-row">
+        <span class="lbl" data-i18n="ed.size"></span>
+        <select id="paper" class="field" style="width:auto;min-width:110px"><option value="A4">A4</option><option value="Letter">Letter</option></select>
+      </div>
+      <label class="switch"><input id="show-margin" type="checkbox" checked><span class="track" aria-hidden="true"></span><span data-i18n="page.margin"></span></label>
+      <label class="switch"><input id="answer-space" type="checkbox" checked><span class="track" aria-hidden="true"></span><span data-i18n="studio.answerspace"></span></label>
+      <label class="switch"><input id="show-ministry" type="checkbox"><span class="track" aria-hidden="true"></span><span data-i18n="ed.ministry"></span></label>
+      <div class="lbl" style="margin-top:14px" data-icon="school"><span data-i18n="ed.logo"></span></div>
+      <div class="logo-row">
+        <label class="btn outline small upload-btn" data-icon="image"><span data-i18n="ed.logoup"></span>
+          <input id="logo-input" type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="sr-only">
+        </label>
+        <button type="button" id="logo-remove" class="btn ghost small" data-icon="trash"><span data-i18n="ed.logorm"></span></button>
+      </div>
+    </section>
+  </aside>
+
+  <main class="paper-area">
+    <div class="paper-tools no-print">
+      <span id="mark-total" class="mark-total" data-icon="hash" data-icon-size="14"><span></span></span>
+    </div>
+    <article id="sheet" class="sheet a4"></article>
+    <div id="error" class="sr-only" role="alert"></div>
+  </main>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="/icons.js"></script>
+<script src="/i18n.js"></script>
+<script src="/vendor/katex/katex.min.js"></script>
+<script src="/math.js"></script>
+<script src="/templates.js"></script>
+<script src="/settings.js"></script>
+<script src="/export.js"></script>
+<script src="/theme-ui.js"></script>
+<script src="/exam.js"></script>
+</body>
+</html>

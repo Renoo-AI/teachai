@@ -1,0 +1,10 @@
+node_modules
+.env
+.git
+.claude
+_local
+scripts
+data
+*.log
+*.err
+vercel-proxy

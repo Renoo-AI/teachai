@@ -1,0 +1,26 @@
+# Render blueprint (free): New > Blueprint > pick this repository.
+# The free plan has no persistent disk, so exams, the waiting list and messages live in a free Postgres (DATABASE_URL, e.g. Neon).
+# Access codes: set TEACHAI_COUPONS="CODE1,CODE2" (data/coupons.json would be wiped on every restart).
+services:
+  - type: web
+    name: teach-ai
+    runtime: docker
+    plan: free
+    healthCheckPath: /faq
+    envVars:
+      - key: SITE_URL
+        sync: false          # e.g. https://teach-ai.onrender.com or your own domain
+      - key: DATABASE_URL
+        sync: false          # Neon / Supabase Postgres connection string
+      - key: ADMIN_PASSWORD
+        sync: false          # password for /admin (a long passphrase); the admin is off without it
+      - key: TEACHAI_COUPONS
+        sync: false          # comma-separated access codes
+      - key: ACCESS_SECRET
+        generateValue: true
+      - key: DEEPSEEK_TOKEN
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: TEACHAI_MODEL
+        sync: false

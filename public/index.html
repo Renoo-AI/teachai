@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create an exam · Teach.ai</title>
+<meta name="description" content="Turn a lesson into an editable, printable exam with an answer key. No login.">
+<meta name="theme-color" content="#FAF8F4">
+<link rel="icon" href="/brand/favicon.ico" sizes="any">
+<link rel="icon" id="fav-svg" type="image/svg+xml" href="/brand/icon.svg">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script src="/brand.js"></script>
+<script src="/theme.js"></script>
+<link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/app.css">
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/picker.css">
+</head>
+<body class="app home">
+
+<header class="appbar">
+  <a class="brand" href="/" aria-label="Teach.ai"><span class="brand-mark" aria-hidden="true"></span><span>Teach<span class="dot">.</span>ai</span></a>
+  <div class="appbar-end">
+    <div id="langsw" class="langsw" role="group" aria-label="Language"></div>
+    <span data-theme-picker></span>
+    <button type="button" class="icon-btn ai-state" id="ai-state" data-settings data-i18n-title="set.btn" data-i18n-aria="set.btn" data-icon="settings" data-icon-size="20"><span class="pulse" aria-hidden="true"></span></button>
+  </div>
+</header>
+
+<main class="bench">
+  <form id="make" class="workpanel" novalidate>
+    <div class="intro">
+      <h1><span data-i18n="hero.a"></span> <em data-i18n="hero.b"></em></h1>
+      <p data-i18n="ui.tagline"></p>
+    </div>
+
+    <nav class="steps" aria-label="Steps">
+      <button type="button" class="stepbtn" data-goto="0"><span class="sicon" data-icon="filetext" data-icon-size="20"></span><span class="stxt"><b data-i18n="studio.step1"></b><small id="sum-0"></small></span></button>
+      <button type="button" class="stepbtn" data-goto="1"><span class="sicon" data-icon="cap" data-icon-size="20"></span><span class="stxt"><b data-i18n="studio.step2"></b><small id="sum-1"></small></span></button>
+      <button type="button" class="stepbtn" data-goto="2"><span class="sicon" data-icon="sliders" data-icon-size="20"></span><span class="stxt"><b data-i18n="studio.step3"></b><small id="sum-2"></small></span></button>
+    </nav>
+
+    <!-- Hidden selects keep the state; the pickers drive them. -->
+    <div class="sr-only" aria-hidden="true">
+      <select id="level" tabindex="-1"></select>
+      <select id="subject" tabindex="-1"></select>
+      <select id="kind" tabindex="-1"></select>
+      <select id="num" tabindex="-1"></select>
+      <select id="lang" tabindex="-1"></select>
+      <select id="exercises" tabindex="-1"></select>
+      <select id="difficulty" tabindex="-1"><option>Mixed</option><option>Easy</option><option>Medium</option><option>Hard</option></select>
+      <select id="choices" tabindex="-1"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option></select>
+    </div>
+
+    <!-- Step 1: the lesson -->
+    <section class="pane" data-pane="0" id="dropcard">
+      <label id="zone" class="dropzone" for="file">
+        <span class="dz-icon" data-icon="upload" data-icon-size="28"></span>
+        <span class="dz-title" data-i18n="ui.drop"></span>
+        <span class="dz-types"><i>PDF</i><i>DOCX</i><i>TXT</i><i>MD</i></span>
+        <span class="btn ghost small" data-icon="file" data-i18n="zone.btn"></span>
+      </label>
+      <input id="file" type="file" accept=".pdf,.docx,.txt,.md" multiple class="sr-only">
+      <ul id="chips" class="files"></ul>
+
+      <div class="paste">
+        <div class="paste-head">
+          <label for="lesson" class="label" data-icon="clipboard" data-i18n="ui.paste"></label>
+          <span id="lessonstatus" class="meter-label"></span>
+        </div>
+        <textarea id="lesson" class="textarea" data-i18n-ph="lesson.ph"></textarea>
+        <div class="meter" aria-hidden="true"><span id="meter-bar"></span></div>
+      </div>
+      <p class="fineprint" data-icon="info" data-icon-size="14" data-i18n="studio.private"></p>
+    </section>
+
+    <!-- Step 2: class and subject -->
+    <section class="pane" data-pane="1" hidden>
+      <div class="field-block">
+        <h3 class="label" data-icon="cap" data-i18n="step.class"></h3>
+        <div id="cycle-seg" class="seg" role="group"></div>
+        <div id="year-seg" class="seg" role="group"></div>
+        <div id="level-chips" class="chips" role="group"></div>
+      </div>
+      <div class="field-block">
+        <h3 class="label" data-icon="book"><span data-i18n="step.subject"></span><button type="button" id="subj-toggle" class="linkbtn"></button></h3>
+        <div id="subject-grid" class="subjects" role="group"></div>
+        <p id="plan-sum" class="plan-note"></p>
+      </div>
+      <div class="split">
+        <div class="field-block">
+          <h3 class="label" data-icon="paper" data-i18n="step.paper"></h3>
+          <div id="kind-seg" class="seg wrap" role="group"></div>
+          <div id="num-seg" class="seg" role="group"></div>
+        </div>
+        <div class="field-block">
+          <h3 class="label" data-icon="lang" data-i18n="step.lang"></h3>
+          <div id="lang-seg" class="seg wrap" role="group"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 3: the paper -->
+    <section class="pane" data-pane="2" hidden>
+      <div class="field-block">
+        <h3 class="label" data-icon="layout" data-i18n="design.title"></h3>
+        <div id="design-tiles" class="dtiles" role="group"></div>
+      </div>
+
+      <div class="split">
+        <div class="input-icon"><span data-icon="school"></span><input id="school-name" class="input" maxlength="160" data-i18n-ph="studio.school" data-i18n-aria="studio.school"></div>
+        <div class="input-icon"><span data-icon="user"></span><input id="teacher-name" class="input" maxlength="120" data-i18n-ph="studio.teacher" data-i18n-aria="studio.teacher"></div>
+      </div>
+
+      <div class="field-block">
+        <h3 class="label" data-icon="layers"><span data-i18n="step.questions"></span><span id="qsum" class="pill"></span></h3>
+        <div class="mix">
+          <div class="mrow"><span class="mlab" data-icon="mcq" data-i18n="type.mcq"></span><div class="stepper"><button type="button" data-step="n-mcq" data-d="-1" data-icon="minus" aria-label="−"></button><input id="n-mcq" type="number" min="0" max="30" value="4"><button type="button" data-step="n-mcq" data-d="1" data-icon="plus" aria-label="+"></button></div></div>
+          <div class="mrow"><span class="mlab" data-icon="tf" data-i18n="type.tf"></span><div class="stepper"><button type="button" data-step="n-tf" data-d="-1" data-icon="minus" aria-label="−"></button><input id="n-tf" type="number" min="0" max="30" value="0"><button type="button" data-step="n-tf" data-d="1" data-icon="plus" aria-label="+"></button></div></div>
+          <div class="mrow"><span class="mlab" data-icon="short" data-i18n="type.short"></span><div class="stepper"><button type="button" data-step="n-short" data-d="-1" data-icon="minus" aria-label="−"></button><input id="n-short" type="number" min="0" max="30" value="4"><button type="button" data-step="n-short" data-d="1" data-icon="plus" aria-label="+"></button></div></div>
+          <div class="mrow"><span class="mlab" data-icon="essay" data-i18n="type.essay"></span><div class="stepper"><button type="button" data-step="n-essay" data-d="-1" data-icon="minus" aria-label="−"></button><input id="n-essay" type="number" min="0" max="10" value="2"><button type="button" data-step="n-essay" data-d="1" data-icon="plus" aria-label="+"></button></div></div>
+          <div class="mrow strong"><span class="mlab" data-icon="hash" data-i18n="ex.label"></span><div class="stepper"><button type="button" id="ex-minus" data-icon="minus" aria-label="−"></button><output id="ex-val">3</output><button type="button" id="ex-plus" data-icon="plus" aria-label="+"></button></div></div>
+        </div>
+      </div>
+
+      <div class="field-block" id="ref-step">
+        <div class="ref-box">
+          <button type="button" id="ref-btn" class="btn ghost" data-icon="library"></button>
+          <div id="ref-chip" class="ref-chip" hidden><span data-icon="paper"></span><span id="ref-label"></span><button type="button" id="ref-clear" class="icon-btn tiny" data-icon="x" data-i18n-aria="ref.clear"></button></div>
+        </div>
+        <p id="ref-note" class="hint"></p>
+      </div>
+
+      <details class="more">
+        <summary data-icon="sliders"><span data-i18n="more.title"></span></summary>
+        <div class="more-body">
+          <div>
+            <label class="label" for="title" data-i18n="field.title"></label>
+            <input id="title" class="input" type="text" maxlength="120">
+          </div>
+          <div>
+            <div class="label" data-icon="gauge" data-i18n="diff.label"></div>
+            <div id="diff-seg" class="seg" role="group"></div>
+          </div>
+          <div>
+            <div class="label" data-icon="mcq" data-i18n="choices.label"></div>
+            <div id="choices-seg" class="seg" role="group"></div>
+          </div>
+          <div>
+            <div class="label" data-i18n="weights.label"></div>
+            <div class="weights">
+              <label><span data-i18n="type.mcq"></span><input id="p-mcq" class="input small" type="number" min="0" max="20" value="1"></label>
+              <label><span data-i18n="type.tf"></span><input id="p-tf" class="input small" type="number" min="0" max="20" value="1"></label>
+              <label><span data-i18n="type.short"></span><input id="p-short" class="input small" type="number" min="0" max="20" value="2"></label>
+              <label><span data-i18n="type.essay"></span><input id="p-essay" class="input small" type="number" min="0" max="20" value="5"></label>
+            </div>
+          </div>
+          <label id="support-row" class="switch"><input id="support" type="checkbox" checked><span class="track" aria-hidden="true"></span><span data-i18n="support.label"></span></label>
+          <label class="switch"><input id="create-answer-space" type="checkbox" checked><span class="track" aria-hidden="true"></span><span data-i18n="studio.answerspace"></span></label>
+        </div>
+      </details>
+    </section>
+
+    <footer class="actionbar">
+      <button type="button" id="back" class="btn ghost" data-icon="left"><span data-i18n="studio.back"></span></button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <button type="button" id="next" class="btn primary"><span data-i18n="studio.next"></span><span data-icon="right"></span></button>
+      <button id="go" class="btn primary big" type="submit" data-icon="spark"><span data-i18n="go.btn"></span></button>
+    </footer>
+  </form>
+
+  <aside class="desk" aria-label="Preview">
+    <div class="desk-head">
+      <span class="label" data-icon="eye" data-i18n="studio.preview"></span>
+      <button type="button" id="provider" class="provider" data-settings></button>
+    </div>
+    <div id="live-paper" class="mini-paper"></div>
+    <p class="desk-note" data-i18n="studio.previewnote"></p>
+  </aside>
+</main>
+
+<div id="gen" class="gen" hidden>
+  <div class="gen-card" role="dialog" aria-modal="true" aria-labelledby="gen-title">
+    <div class="gen-paper" aria-hidden="true">
+      <div class="gp-head"><i></i><i></i><i></i></div>
+      <div class="gp-body"></div>
+      <span class="gp-pen" data-icon="pencil" data-icon-size="22"></span>
+    </div>
+    <div class="gen-side">
+      <h2 id="gen-title" data-i18n="create.title"></h2>
+      <p class="gen-sub" id="gen-sub"></p>
+      <ol class="gen-stages">
+        <li data-stage="drafting"><span class="gs-ico"></span><span data-i18n="create.drafting"></span></li>
+        <li data-stage="checking"><span class="gs-ico"></span><span id="gs-check" data-i18n="create.checking"></span></li>
+        <li data-stage="complete"><span class="gs-ico"></span><span data-i18n="create.complete"></span></li>
+      </ol>
+      <div class="gen-bar"><span id="gen-bar"></span></div>
+      <div class="gen-foot">
+        <span id="gen-time" class="gen-time"></span>
+        <button type="button" id="gen-cancel" class="btn ghost small" data-icon="x"><span data-i18n="create.cancel"></span></button>
+      </div>
+      <p class="gen-tip" id="gen-tip"></p>
+    </div>
+  </div>
+</div>
+
+<script src="/icons.js"></script>
+<script src="/i18n.js"></script>
+<script src="/templates.js"></script>
+<script src="/settings.js"></script>
+<script src="/theme-ui.js"></script>
+<script src="/home.js"></script>
+<script src="/home-flow.js"></script>
+</body>
+</html>

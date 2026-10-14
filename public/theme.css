@@ -1,0 +1,206 @@
+/* Teach.ai app theme. Loaded after app.css: it swaps the design tokens (light and dark, any accent) and
+   raises the finish of the existing components. Markup and scripts are untouched.
+   The printed paper (.sheet, .mini-paper, .gen-paper, .thumb) stays white in every mode on purpose. */
+
+@font-face { font-family: 'Geist'; src: url('/fonts/geist-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Geist'; src: url('/fonts/geist-latin-ext-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-display: swap; unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Instrument Serif'; src: url('/fonts/instrument-serif-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Instrument Serif'; src: url('/fonts/instrument-serif-latin-400-italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Noto Sans Arabic'; src: url('/fonts/noto-sans-arabic-arabic-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+
+/* ---------- Tokens ---------- */
+:root {
+  --accent: #C84B1C; --accent-rgb: 200,75,28; --on-accent: #FFFFFF; --accent-hi: #DF977B; --accent-mid: #D26B45; --accent-lo: #9C3B16; --accent-glow: #F8E9E4; --accent-text: #9C3B16;
+  --ui-sans: 'Geist', 'Noto Sans Arabic', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --ui-serif: 'Geist', 'Noto Sans Arabic', 'Segoe UI', system-ui, sans-serif;
+  --ui-italic: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --ui-r: 11px; --ui-r-lg: 18px;
+  --ui-brand: var(--accent);
+  --ui-brand-soft: rgba(var(--accent-rgb), .12);
+  --ui-brand-soft-2: rgba(var(--accent-rgb), .26);
+  --ui-brand-press: var(--accent-text);
+  --ui-ring: 0 0 0 2px rgba(var(--accent-rgb), .28);
+}
+:root[data-theme="light"], :root:not([data-theme]) {
+  color-scheme: light;
+  --ui-bg: #FAF8F4; --ui-surface: #FFFFFF; --ui-surface-2: #F7F4EE; --ui-sunk: #EFEBE3; --ui-select: #EFEBE3; --ui-press: #E6E1D6;
+  --ui-line: rgba(17,17,17,.09); --ui-line-strong: rgba(17,17,17,.17);
+  --ui-ink: #111111; --ui-ink-2: #46423B; --ui-ink-3: #6F6A62;
+  --ui-brand-hover: color-mix(in srgb, var(--accent) 86%, #000);
+  --ui-red: #B53A2A; --ui-red-soft: #FBEAE6; --ui-amber: #84560F; --ui-amber-soft: #FBF1DD; --ui-ok: #2F7A53;
+  --ui-shadow-sm: 0 1px 2px rgba(17,17,17,.06);
+  --ui-shadow: 0 1px 2px rgba(17,17,17,.05), 0 4px 14px -6px rgba(60,40,20,.12);
+  --ui-shadow-lg: 0 14px 40px -14px rgba(40,30,20,.3), 0 0 0 .5px rgba(17,17,17,.08);
+  --ui-glass: #FAF8F4; --ui-overlay: rgba(20,18,14,.4); --ui-hover-on: rgba(255,255,255,.75);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ui-bg: #161615; --ui-surface: #1F1F1D; --ui-surface-2: #252523; --ui-sunk: #2C2C29; --ui-select: #2C2C29; --ui-press: #353532;
+  --ui-line: rgba(255,250,240,.09); --ui-line-strong: rgba(255,250,240,.17);
+  --ui-ink: #ECE8E0; --ui-ink-2: #B7B2A8; --ui-ink-3: #8F8A80;
+  --ui-brand-hover: color-mix(in srgb, var(--accent) 84%, #fff);
+  --ui-red: #FF8A7A; --ui-red-soft: rgba(229,72,77,.16); --ui-amber: #F2C265; --ui-amber-soft: rgba(245,184,0,.12); --ui-ok: #4ADE9B;
+  --ui-shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+  --ui-shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px -8px rgba(0,0,0,.5);
+  --ui-shadow-lg: 0 18px 50px -16px rgba(0,0,0,.6), 0 0 0 1px rgba(255,250,240,.08);
+  --ui-glass: #161615; --ui-overlay: rgba(0,0,0,.55); --ui-hover-on: rgba(255,250,240,.07);
+}
+html[dir="rtl"] { --ui-sans: 'Noto Sans Arabic', 'Geist', 'Segoe UI', Tahoma, Arial, sans-serif; --ui-serif: 'Noto Sans Arabic', 'Geist', 'Segoe UI', Tahoma, sans-serif; --ui-italic: Amiri, 'Noto Naskh Arabic', serif; }
+.theme-anim, .theme-anim *, .theme-anim *::before, .theme-anim *::after { transition: background-color .35s ease, border-color .35s ease, color .35s ease, fill .35s ease !important; }
+
+/* ---------- Page ---------- */
+body.app { position: relative; isolation: isolate; font-family: var(--ui-sans); letter-spacing: -.005em; }
+::selection { background: rgba(var(--accent-rgb), .25); }
+body.app :focus-visible { outline-color: var(--accent); }
+body.app * { scrollbar-color: var(--ui-line-strong) transparent; }
+
+/* ---------- Header and brand ---------- */
+.appbar { background: var(--ui-glass); border-bottom-color: var(--ui-line); }
+.appbar .brand { gap: 10px; font-family: var(--ui-sans); font-size: 21px; font-weight: 800; letter-spacing: -.045em; }
+.appbar .brand .dot { color: var(--accent-text); }
+.brand-mark { width: 30px; height: 30px; border: 0; border-radius: 9px; background: none; box-shadow: none; flex: none; line-height: 0; }
+.brand-mark::before, .brand-mark::after { content: none; }
+.brand-mark svg { width: 100%; height: 100%; display: block; }
+.ed-bar .brand-mark { width: 26px; height: 26px; }
+
+/* ---------- Controls ---------- */
+body.app .btn { border-radius: var(--ui-r); font-weight: 600; background: var(--ui-surface); border-color: var(--ui-line-strong); }
+body.app .btn:hover { background: var(--ui-surface-2); border-color: var(--ui-ink-3); }
+body.app .btn:active, body.app .icon-btn:active, .stepbtn:active, .dropzone:active, body.app .tile:active, body.app .dtile:active, body.app .stepper button:active,
+body.app .chip:active, .menu-item:active, .add-tile:active, body.app .dlg-x:active, body.app .sheet .ibtn:active, body.app .btn.ghost:active, body.app .btn.quiet:active { background: var(--ui-press); }
+body.app .btn.primary, body.app .btn.dark { background: var(--accent); border-color: var(--accent); color: var(--on-accent); box-shadow: none; }
+body.app .btn.primary:hover, body.app .btn.dark:hover { background: var(--ui-brand-hover); border-color: var(--ui-brand-hover); color: var(--on-accent); }
+body.app .btn.primary:active, body.app .btn.dark:active { background: var(--accent-lo); border-color: var(--accent-lo); color: var(--on-accent); }
+body.app .btn.ghost, body.app .btn.quiet { background: transparent; border-color: transparent; }
+body.app .btn.ghost:hover, body.app .btn.quiet:hover { background: var(--ui-select); }
+body.app .btn.outline { background: var(--ui-surface); }
+body.app .btn.big { min-height: 48px; border-radius: 14px; }
+body.app .icon-btn { border-radius: 12px; }
+body.app .icon-btn.on, body.app .linkbtn { color: var(--accent-text); }
+body.app .linkbtn:hover, body.app .icon-btn:hover { background: var(--ui-select); }
+body.app .input:focus, body.app .textarea:focus, body.app .field:focus, body.app .as-box textarea:focus, body.app .sheet .qtools .ai-input:focus { border-color: var(--accent); box-shadow: var(--ui-ring); }
+body.app .input, body.app .textarea, body.app .field, body.app select.field { background: var(--ui-surface); }
+body.app select.field { background-color: var(--ui-surface); }
+body.app .switch input:checked + .track { background: var(--accent); }
+body.app .switch .track::after { box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+body.app .seg { background: var(--ui-sunk); border-radius: 13px; }
+body.app .seg-b:hover, body.app .langsw .ls:hover, body.app .print-dialog .dlg-head .seg button:hover { background: var(--ui-hover-on); }
+body.app .seg-b:active, body.app .langsw .ls:active { background: var(--ui-hover-on); }
+body.app .seg-b.on, body.app .seg-b.on:hover, body.app .langsw .ls.on, body.app .langsw .ls.on:hover, body.app .print-dialog .dlg-head .seg button.on { background: var(--ui-surface); color: var(--accent-text); }
+body.app .langsw { background: var(--ui-sunk); border-radius: 12px; }
+body.app .chip:hover { background: var(--ui-select); }
+body.app .chip.on, body.app .chip.on:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+body.app .pill, .menu-item .mi-ico { color: var(--accent-text); }
+body.app .menu-item .mi-ico { color: var(--ui-ink-2); }
+.menu-item:hover .mi-ico { background: var(--ui-surface); }
+
+/* ---------- Home ---------- */
+.bench { max-width: 1260px; padding-top: 34px; }
+.workpanel { border-radius: 28px; background: var(--ui-surface); border-color: var(--ui-line); box-shadow: var(--ui-shadow); }
+.intro { padding: 34px 34px 6px; }
+.intro h1 { font-family: var(--ui-sans); font-weight: 700; font-size: clamp(34px, 4vw, 52px); line-height: 1; letter-spacing: -.05em; }
+.intro h1 em { font-family: var(--ui-italic); font-style: italic; font-weight: 400; font-size: 1.1em; letter-spacing: -.02em; color: var(--accent-text); }
+html[dir="rtl"] .intro h1 { letter-spacing: 0; line-height: 1.25; }
+html[dir="rtl"] .intro h1 em { font-style: normal; font-weight: 700; font-size: 1em; }
+.intro p { font-size: 16px; color: var(--ui-ink-2); margin-top: 12px; }
+.steps, .pane { padding-inline: 34px; }
+.stepbtn { border-radius: 16px; background: var(--ui-surface-2); }
+.stepbtn .sicon { border-radius: 12px; }
+.stepbtn.on { border-color: var(--accent); background: var(--ui-surface); box-shadow: var(--ui-ring); }
+.stepbtn.on .sicon { background: var(--accent); color: var(--on-accent); }
+.stepbtn.done .sicon { background: var(--ui-brand-soft); color: var(--accent-text); }
+.stepbtn.done .sicon::after { background-color: var(--accent); border-color: var(--ui-surface); }
+.stepbtn:hover { background: var(--ui-select); }
+.dropzone { border-radius: 20px; border: 1.5px dashed var(--ui-line-strong); background: var(--ui-surface-2); }
+.dropzone:hover { border-color: var(--accent); background: var(--ui-brand-soft); }
+.dropzone.drag { border-color: var(--accent); background: var(--ui-brand-soft); box-shadow: var(--ui-ring); }
+.dz-icon { border-radius: 18px; color: var(--accent-text); background: var(--ui-surface); }
+.dz-title { font-family: var(--ui-sans); font-size: 21px; font-weight: 700; letter-spacing: -.03em; }
+.dz-types i { background: var(--ui-sunk); }
+body.app .dropzone .btn { background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-line-strong); }
+.file-row .badge { color: var(--accent-text); background: var(--ui-brand-soft); }
+.file-row.error { border-color: rgba(229,72,77,.35); }
+.file-row.error .badge { background: var(--ui-red-soft); }
+.paste { border-radius: 22px; }
+.paste:focus-within { border-color: var(--accent); box-shadow: var(--ui-ring); }
+.meter span { background: var(--ui-amber); } .meter.ok span { background: var(--accent); }
+body.app .tile { border-radius: 13px; background: var(--ui-surface); }
+body.app .tile.on, body.app .tile.on:hover { border-color: var(--accent); background: var(--ui-brand-soft); color: var(--ui-ink); box-shadow: inset 0 0 0 1px var(--accent); }
+body.app .tile.on .ico { color: var(--accent-text); }
+body.app .tile:hover, body.app .dtile:hover { background: var(--ui-select); }
+body.app .dtile.on, body.app .dtile.on:hover { border-color: var(--accent); background: var(--ui-brand-soft); color: var(--ui-ink); box-shadow: inset 0 0 0 1px var(--accent); }
+.mrow { border-radius: 14px; }
+.mrow.strong { background: var(--ui-brand-soft); border-color: var(--ui-brand-soft-2); }
+.mrow.strong .mlab .ico { color: var(--accent-text); }
+body.app .stepper { background: var(--ui-surface); border-radius: 11px; }
+.ref-chip { background: var(--ui-brand-soft); color: var(--ui-ink); }
+.more { border-radius: 16px; }
+.more > summary:hover { background: var(--ui-select); }
+.actionbar { background: var(--ui-surface); border-radius: 0 0 28px 28px; padding-inline: 34px; box-shadow: 0 -10px 20px -14px rgba(0,0,0,.25); }
+.actionbar .btn.primary.big { padding-inline: 26px; }
+.provider { background: var(--ui-surface); }
+.provider .led { background: var(--ui-ok); }
+.desk { top: 84px; }
+.mini-paper { box-shadow: 0 0 0 1px var(--ui-line), 0 12px 30px -14px rgba(0,0,0,.4); }
+
+/* ---------- Generating ---------- */
+.gen { background: var(--ui-overlay); }
+.gen-card { border-radius: 28px; border: 1px solid var(--ui-line); }
+.gen-side h2 { font-family: var(--ui-sans); font-weight: 700; font-size: 30px; letter-spacing: -.04em; }
+.gen-stages li.active { background: var(--ui-brand-soft); }
+.gen-stages li.active .gs-ico { background: var(--accent); color: var(--on-accent); }
+.gen-stages li.done .gs-ico { background: var(--ui-brand-soft-2); color: var(--accent-text); }
+.gen-bar span { background: var(--accent); }
+.gen-tip .ico { color: var(--accent-text); }
+.gp-pen { color: var(--accent-lo); }
+
+/* ---------- Dialogs and menus ---------- */
+body.app .dlg { border-radius: 24px; border: 1px solid var(--ui-line); }
+body.app .dlg::backdrop { background: var(--ui-overlay); }
+body.app .dlg-head h2 { font-family: var(--ui-sans); font-weight: 700; letter-spacing: -.03em; font-size: 24px; }
+body.app .dlg .set-line.ok { color: var(--accent-text); }
+body.app .pp-item.on { border-color: var(--accent); background: var(--ui-brand-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+body.app .pp-item:hover { background: var(--ui-select); }
+.menu-pop { border-radius: 16px; border-color: var(--ui-line-strong); }
+.demo-strip { border-bottom-color: var(--ui-line); }
+.toast { background: var(--ui-ink); color: var(--ui-bg); }
+.toast.error { background: #8E2F20; color: #fff; }
+.toast.ok .ico { color: var(--ui-ok); }
+:root[data-theme="dark"] .toast.ok .ico { color: #0E7A4C; }
+
+/* ---------- Editor ---------- */
+.ed-center .seg-b { flex: none; overflow: visible; }
+.side-card { border-radius: 20px; }
+.side-card.assistant { background: var(--ui-surface); border-color: var(--ui-brand-soft-2); }
+.side-card.assistant h2 .ico { color: var(--accent-text); }
+body.app .as-msg.me { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+body.app .as-msg.err { border-color: rgba(229,72,77,.35); }
+body.app .as-chips .chip, body.app .sheet .qtools .chip { border-color: var(--ui-brand-soft-2); }
+body.app .as-send { background: var(--accent); color: var(--on-accent); }
+body.app .as-send:hover { background: var(--ui-brand-hover); } body.app .as-send:active { background: var(--accent-lo); }
+body.app .as-undo:hover, body.app .sheet .qflag-ok:hover, body.app .sheet .ibtn:hover { background: var(--ui-select); }
+.add-tile { border-radius: 14px; }
+.add-tile .ico { color: var(--accent-text); }
+.add-tile:hover, .menu-item:hover { background: var(--ui-select); }
+.mark-total { background: var(--ui-surface); }
+body.app .sheet { background: #fff; color: #161616; border-radius: 3px; box-shadow: 0 0 0 1px var(--ui-line), 0 14px 36px -18px rgba(0,0,0,.4); }
+body.app .sheet .ibtn.go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+body.app .sheet .ibtn.go:hover { background: var(--ui-brand-hover); }
+body.app .sheet .qtools .ai-who { color: var(--accent-text); }
+body.app .sheet .qtools .ai { background: var(--ui-brand-soft); }
+body.app .sheet .qtools > summary:hover { background: var(--ui-select); }
+/* The paper keeps its own light colours for editing affordances. */
+body.app .sheet .qtools[open], body.app .sheet .qtools .pill, body.app .sheet .qtools .ask, body.app .sheet .qtools .ai-input { color: #161616; }
+body.app .sheet .qtools[open] { background: #F7F5F0; border-color: #DDD8CC; }
+body.app .sheet .qtools .ibtn, body.app .sheet .qtools .pill, body.app .sheet .qtools .ai-input, body.app .sheet .qtools .ask { background-color: #fff; border-color: #D9D4C8; color: #333; }
+body.app .sheet .qtools .ibtn:hover { background: #F0EDE6; }
+body.app .sheet .qtools > summary { color: #6F6A62; }
+body.app .sheet .qtools > summary:hover { background: #EFEBE3; color: #111; }
+body.app .sheet .qtools .ai { background: rgba(var(--accent-rgb), .12); }
+body.app .sheet .qtools .ai-who { color: #111; }
+body.app .sheet .qflag { background: #FBF1DD; color: #84560F; }
+body.app .sheet .qflag-ok { background: #fff; color: #333; border-color: #E8D3A8; }
+body.app .sheet .qprompt[contenteditable="true"]:hover, body.app .sheet [contenteditable="true"]:hover { background: rgba(var(--accent-rgb), .08); }
+body.app .sheet [contenteditable="true"]:focus { outline: 1.5px solid var(--accent); background: rgba(var(--accent-rgb), .1); }
+
+@media (max-width: 640px) { .intro { padding: 24px 20px 0; } .steps, .pane { padding-inline: 20px; } .actionbar { padding-inline: 20px; } }

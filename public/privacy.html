@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy · Teach.ai</title>
+<meta name="description" content="What Teach.ai collects, why, who it is shared with and how long it is kept.">
+<link rel="canonical" href="{{SITE_URL}}/privacy">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#FAF8F4">
+<link rel="icon" href="/brand/favicon.ico" sizes="any">
+<link rel="icon" id="fav-svg" type="image/svg+xml" href="/brand/icon.svg">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script src="/brand.js"></script>
+<script src="/theme.js"></script>
+<link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/picker.css">
+</head>
+<body data-page="privacy">
+<!--NAV-->
+
+<main id="main">
+  <div class="page-top wrap">
+    <h1>Privacy Policy</h1>
+    <p class="lead">Short version: no account, no ads, no tracking, and a single cookie that only exists if you enter an access code. Your lesson and exam are stored so you can edit them, and the lesson is sent to an AI provider to write the questions.</p>
+  </div>
+  <div class="wrap">
+    <article class="prose" dir="ltr" lang="en">
+      <p class="meta">Last updated: <span data-site-updated>13 October 2026</span></p>
+
+      <h2>1. Who we are</h2>
+      <p>Teach.ai (“we”, “us”) is a web service that turns a lesson into an editable exam. It is operated by <strong data-site-legal>the operator named in the footer of this site</strong><span data-site-address-wrap hidden>, <span data-site-address></span></span>. For any privacy question or request, write to <a data-site-mail-inline href="#" hidden></a><span data-site-mail-missing>the contact address that will be published on this page</span>.</p>
+
+      <h2>2. What we collect and why</h2>
+      <table>
+        <thead><tr><th>Data</th><th>Why</th><th>How long</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Lesson text</strong> you paste or upload (and text we extract from a file)</td><td>To write the questions, and to rewrite a single question later</td><td>Stored with the exam. Deleted with it.</td></tr>
+          <tr><td><strong>Exam content</strong>: questions, answers, marks, titles, school and teacher names, uploaded logo or images</td><td>To show, edit, print and export your exam</td><td>Deleted automatically after 30 days without edits</td></tr>
+          <tr><td><strong>Edit key</strong> (we keep only a SHA-256 hash of it)</td><td>To let only people with your edit link change the exam</td><td>Deleted with the exam</td></tr>
+          <tr><td><strong>Email address and role</strong> if you join the waiting list for school plans</td><td>To tell you when school plans open</td><td>Until you ask us to remove it, or until the programme ends</td></tr>
+          <tr><td><strong>Messages</strong> you send through the contact form (name if you give it, email, message)</td><td>To reply to you</td><td>Until we have answered, plus a reasonable time in case of follow-up; deleted on request</td></tr>
+          <tr><td><strong>Access code</strong> you enter, how many times it was used, and when</td><td>Early access is by invitation: to check your code, limit it to the teacher it was given to, and stop it if needed</td><td>While the code is active</td></tr>
+          <tr><td><strong>IP address</strong></td><td>Rate limiting, to prevent abuse. Kept in the server’s memory only.</td><td>At most one hour, never written to disk by the application</td></tr>
+        </tbody>
+      </table>
+      <p>We do not ask for your name, phone number or payment details, and there are no user accounts.</p>
+
+      <h2>3. Your lesson and AI providers</h2>
+      <p>To write questions, the text of your lesson, your choices (class, subject, language, question counts) and, if you use a real paper as a model, the text of that paper are sent to a third-party AI provider. Depending on how the service is configured this is DeepSeek (web chat) or a model hosted through NVIDIA NIM. When you ask the in-editor assistant for a change, the relevant part of your exam is sent in the same way.</p>
+      <p>These providers process the text under their own terms and privacy policies, and may do so on servers outside Qatar. We do not control what they do with it. <strong>Please do not put students’ personal data, or any confidential information, in a lesson.</strong></p>
+      <p>If you enter your own DeepSeek token or NVIDIA key in the Settings panel, it is stored only in your browser and is sent with your requests so they run on your account. It is never saved inside an exam.</p>
+
+      <h2>4. Cookies and local storage</h2>
+      <p>We do not use advertising technology or analytics. When you enter an access code we set <strong>one strictly necessary cookie</strong> (<code>ta_access</code>). It keeps you inside early access on that device for up to 30 days, or until the code expires or is withdrawn. It contains a signed token with the code’s identifier and an expiry date, not your name or email, and it is not used for tracking. Without it the app cannot know that you entered a valid code.</p>
+      <p>Your browser’s local storage holds only your preferences: language, light or dark mode, accent colour, and your AI settings. You can clear both from your browser at any time; if you clear the cookie you will need to enter your code again, and a one-time code may then need to be reissued by us.</p>
+
+      <h2>5. Sharing</h2>
+      <p>We share data with: (a) the AI providers described above, to write your questions; (b) our hosting provider, which stores the data on our behalf; and (c) authorities where the law requires it. We do not sell personal data. Anyone who has your <strong>view link</strong> can read the exam (the lesson text is not exposed there, unless you chose to print it on the paper as the support text); anyone who has your <strong>edit link</strong> can change it. Share those links only with people you trust.</p>
+
+      <h2>6. How long we keep data</h2>
+      <p>An exam that has not been edited for 30 days is deleted automatically, together with its lesson text. Waiting-list emails are kept until you ask us to delete them. If you want to remove an exam sooner, write to us with its link.</p>
+
+      <h2>7. Security</h2>
+      <p>Edit keys are stored only as hashes. Exams are stored on our server and served over HTTPS. No system is perfectly secure, so keep your edit link private and download a copy of anything you cannot afford to lose.</p>
+
+      <h2>8. Your rights</h2>
+      <p>You can ask us to give you a copy of the personal data we hold about you, correct it, or delete it. Where the Personal Data Privacy Protection Law of Qatar (Law No. 13 of 2016) or other data-protection law applies to you, you have the rights it provides, including to withdraw consent and to complain to the competent authority. Write to us and we will answer within a reasonable time.</p>
+
+      <h2>9. Children</h2>
+      <p>Teach.ai is meant for teachers and other adults. It is not directed at children, and we do not knowingly collect their personal data.</p>
+
+      <h2>10. Changes</h2>
+      <p>We may update this policy as the service changes. The date at the top shows when it last changed; for significant changes we will say so on the home page.</p>
+
+      <h2>11. Contact</h2>
+      <p>Questions or requests: <a data-site-mail-inline href="#" hidden></a><span data-site-mail-missing>the contact address that will be published on this page</span>.</p>
+    </article>
+  </div>
+</main>
+
+<!--FOOTER-->
+
+<script src="/site-config.js"></script>
+<script src="/site-i18n.js"></script>
+<script src="/theme-ui.js"></script>
+<script src="/site.js"></script>
+</body>
+</html>

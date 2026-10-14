@@ -1,0 +1,16 @@
+# secrets
+.env
+
+# dependencies
+node_modules/
+
+# runtime data (stays on the server / persistent disk, never pushed)
+data/
+
+# local scratch: logs, QA output, backups, debug scripts
+_local/
+*.log
+*.err
+
+# local tool config
+.claude/

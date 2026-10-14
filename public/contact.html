@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact · Teach.ai</title>
+<meta name="description" content="Questions, feedback or a request about your data: write to the Teach.ai team.">
+<link rel="canonical" href="{{SITE_URL}}/contact">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#FAF8F4">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Teach.ai">
+<meta property="og:title" content="Contact · Teach.ai">
+<meta property="og:url" content="{{SITE_URL}}/contact">
+<meta property="og:image" content="{{SITE_URL}}/brand/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/brand/favicon.ico" sizes="any">
+<link rel="icon" id="fav-svg" type="image/svg+xml" href="/brand/icon.svg">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script src="/brand.js"></script>
+<script src="/theme.js"></script>
+<link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/picker.css">
+</head>
+<body data-page="contact">
+<!--NAV-->
+
+<main id="main" class="gate">
+  <div class="gate-card contact-card">
+    <h1 data-s-html="contact.title"></h1>
+    <p class="lead" data-s="contact.sub"></p>
+    <form id="contact-form" novalidate>
+      <label for="c-name" data-s="contact.name"></label>
+      <input id="c-name" name="name" type="text" maxlength="100" autocomplete="name">
+      <label for="c-email" data-s="contact.email"></label>
+      <input id="c-email" name="email" type="email" maxlength="254" autocomplete="email" inputmode="email" required>
+      <label for="c-msg" data-s="contact.msg"></label>
+      <textarea id="c-msg" name="message" rows="6" maxlength="4000" required></textarea>
+      <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn btn-primary btn-lg" type="submit"><span data-s="contact.btn"></span></button>
+      <div class="gate-msg" role="status" aria-live="polite"></div>
+      <p class="wl-fine"><span data-s="contact.fine"></span> <a href="/privacy">→</a></p>
+    </form>
+  </div>
+</main>
+
+<!--FOOTER-->
+
+<script src="/site-config.js"></script>
+<script src="/site-i18n.js"></script>
+<script src="/theme-ui.js"></script>
+<script src="/site.js"></script>
+<script src="/site-contact.js"></script>
+</body>
+</html>

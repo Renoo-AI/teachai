@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cookies and storage · Teach.ai</title>
+<meta name="description" content="The one cookie and the browser storage Teach.ai uses, and why.">
+<link rel="canonical" href="{{SITE_URL}}/cookies">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#FAF8F4">
+<link rel="icon" href="/brand/favicon.ico" sizes="any">
+<link rel="icon" id="fav-svg" type="image/svg+xml" href="/brand/icon.svg">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script src="/brand.js"></script>
+<script src="/theme.js"></script>
+<link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/picker.css">
+</head>
+<body data-page="cookies">
+<!--NAV-->
+
+<main id="main">
+  <div class="page-top wrap">
+    <h1>Cookies and storage</h1>
+    <p class="lead">One cookie, only after you enter an access code. No advertising, no analytics, no tracking.</p>
+  </div>
+  <div class="wrap">
+    <article class="prose" dir="ltr" lang="en">
+      <p class="meta">Last updated: <span data-site-updated>13 October 2026</span></p>
+
+      <h2>The cookie</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Purpose</th><th>Lifetime</th></tr></thead>
+        <tbody>
+          <tr><td><code>ta_access</code></td><td>Remembers on this device that you entered a valid access code, so the app stays open to you. It holds a signed token with the code’s identifier and an expiry date, not your name or email. First-party, HttpOnly, SameSite=Lax, and Secure on https.</td><td>Up to 30 days, or until the code expires or is withdrawn</td></tr>
+        </tbody>
+      </table>
+      <p>This cookie is strictly necessary to provide the invite-only service you asked to use, so it is set without a banner. It is not used for tracking or advertising.</p>
+
+      <h2>Browser storage (not cookies)</h2>
+      <table>
+        <thead><tr><th>Key</th><th>What it keeps</th></tr></thead>
+        <tbody>
+          <tr><td><code>teachai.ui</code></td><td>Your language (French, Arabic or English)</td></tr>
+          <tr><td><code>teachai.theme</code>, <code>teachai.accent</code></td><td>Light or dark mode and your accent colour</td></tr>
+          <tr><td><code>teachai.ai</code></td><td>Your AI settings, including a DeepSeek token or NVIDIA key if you chose to enter one. It stays in your browser and is sent only with your own requests.</td></tr>
+        </tbody>
+      </table>
+      <p>Nothing here is sent to advertisers or analytics services, and we do not load third-party scripts or fonts.</p>
+
+      <h2>Controlling them</h2>
+      <p>You can delete the cookie and the stored preferences at any time in your browser’s settings. If you delete the cookie you will be asked for your access code again, and a one-time code may need to be reissued by us: write to us through the <a href="/contact">contact page</a>.</p>
+      <p>More about the data we handle is in the <a href="/privacy">Privacy Policy</a>.</p>
+    </article>
+  </div>
+</main>
+
+<!--FOOTER-->
+
+<script src="/site-config.js"></script>
+<script src="/site-i18n.js"></script>
+<script src="/theme-ui.js"></script>
+<script src="/site.js"></script>
+</body>
+</html>

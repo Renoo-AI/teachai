@@ -1,0 +1,1 @@
+Vercel needs an output folder; every real request is forwarded to Render by vercel.json.

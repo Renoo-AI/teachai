@@ -1,0 +1,35 @@
+/* Appearance picker. Colours come from --tp-* so the same widget fits the app and the marketing site. */
+.tp { position: relative; display: inline-flex; --tp-surface: var(--ui-surface, var(--card, #fff)); --tp-line: var(--ui-line, var(--line, #ddd)); --tp-line-strong: var(--ui-line-strong, var(--line-2, #ccc)); --tp-ink: var(--ui-ink, var(--ink, #111)); --tp-ink-2: var(--ui-ink-2, var(--ink-2, #555)); --tp-ink-3: var(--ui-ink-3, var(--ink-3, #888)); --tp-sunk: var(--ui-sunk, var(--bg-2, #eee)); }
+.tp-btn { position: relative; display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--tp-ink-2); cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; }
+.tp-btn:hover, .tp-btn[aria-expanded="true"] { background: var(--tp-sunk); color: var(--tp-ink); }
+.tp-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tp-ico { width: 18px; height: 18px; flex: none; }
+.tp-dot { position: absolute; right: 7px; bottom: 7px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--tp-surface); }
+html[dir="rtl"] .tp-dot { right: auto; left: 7px; }
+.tp-pop { position: absolute; z-index: 90; top: calc(100% + 8px); inset-inline-end: 0; width: 286px; padding: 14px; border-radius: 18px; background: var(--tp-surface); border: 1px solid var(--tp-line-strong); box-shadow: 0 10px 30px -10px rgba(0,0,0,.3); color: var(--tp-ink); text-align: start; animation: tp-in .16s ease-out; }
+.tp-pop[hidden] { display: none; }
+@keyframes tp-in { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+.tp-lab { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--tp-ink-3); }
+.tp-lab:not(:first-child) { margin-top: 14px; }
+.tp-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 3px; border-radius: 12px; background: var(--tp-sunk); }
+.tp-mode { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 4px; border: 0; border-radius: 9px; background: transparent; color: var(--tp-ink-2); font: 600 12.5px/1 inherit; font-family: inherit; cursor: pointer; transition: background-color .15s, color .15s; }
+.tp-mode .tp-ico { width: 15px; height: 15px; }
+.tp-mode:hover { color: var(--tp-ink); }
+.tp-mode.on { background: var(--tp-surface); color: var(--tp-ink); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+.tp-swatches { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
+.tp-sw { position: relative; aspect-ratio: 1; width: 100%; padding: 0; border: 0; border-radius: 50%; cursor: pointer; transition: transform .12s; }
+.tp-sw:hover { transform: scale(1.12); }
+.tp-sw:focus-visible { outline: 2px solid var(--tp-ink); outline-offset: 2px; }
+.tp-sw.on { box-shadow: 0 0 0 2px var(--tp-surface), 0 0 0 4px var(--tp-ink); }
+.tp-sw.mono { background: linear-gradient(135deg, #141414 50%, #F2EFEA 50%); border: 1px solid var(--tp-line-strong); }
+.tp-custom { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 10px; border: 1px dashed var(--tp-line-strong); border-radius: 12px; font-size: 13px; font-weight: 500; color: var(--tp-ink-2); cursor: pointer; }
+.tp-custom:hover { color: var(--tp-ink); border-color: var(--tp-ink-3); }
+.tp-custom.on { border-style: solid; border-color: var(--accent); color: var(--tp-ink); }
+.tp-custom input { width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; flex: none; }
+.tp-custom input::-webkit-color-swatch-wrapper { padding: 0; }
+.tp-custom input::-webkit-color-swatch { border: 1px solid var(--tp-line-strong); border-radius: 50%; }
+.tp-foot { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.tp-hint { margin: 0; font-size: 11.5px; line-height: 1.45; color: var(--tp-ink-3); }
+.tp-reset { flex: none; padding: 4px 8px; border: 0; border-radius: 8px; background: none; color: var(--accent-text, var(--accent)); font: 600 12px/1 inherit; font-family: inherit; cursor: pointer; }
+.tp-reset:hover { background: var(--tp-sunk); }
+@media (max-width: 480px) { .tp-pop { position: fixed; top: 64px; inset-inline: 12px; width: auto; } }

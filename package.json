@@ -1,0 +1,28 @@
+{
+  "name": "teach-ai",
+  "version": "0.1.0",
+  "description": "Turn a lesson into an editable, printable exam. No login.",
+  "private": true,
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test tests/*.test.js",
+    "brand": "node scripts/make-brand.js",
+    "coupon": "node scripts/coupon.js"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "optionalDependencies": {
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "dependencies": {
+    "@fontsource/amiri": "^5.3.0",
+    "@fontsource/tinos": "^5.3.0",
+    "docx": "^9.11.0",
+    "katex": "^0.19.0",
+    "pg": "^8.23.1",
+    "puppeteer-core": "^25.13.0"
+  }
+}
