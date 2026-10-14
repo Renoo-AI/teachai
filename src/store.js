@@ -9,7 +9,7 @@ const settings = require('./settings');
 const DATA_DIR = process.env.TEACHAI_DATA_DIR || path.join(__dirname, '..', 'data', 'exams');
 
 
-if (!db.enabled()) fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const ID_RE = /^[a-z0-9]{10}$/;
 

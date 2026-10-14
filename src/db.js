@@ -5,7 +5,11 @@ require('dns').setDefaultResultOrder('ipv4first');
 let pool = null;
 let ready = null;
 
-const enabled = () => !!process.env.DATABASE_URL;
+// If the database cannot be reached at all (wrong host, no IPv6 route...), stop using it and let every module
+// fall back to its local files, so the site keeps working instead of failing every request.
+let down = false;
+const UNREACHABLE = /^(ENETUNREACH|EHOSTUNREACH|ENOTFOUND|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN)$/;
+const enabled = () => !!process.env.DATABASE_URL && !down;
 
 function connectionOptions(env = process.env) {
   const connection = new URL(env.DATABASE_URL);
@@ -74,8 +78,14 @@ function init() {
 }
 
 async function query(text, params) {
-  await init();
-  return pool.query(text, params);
+  try {
+    await init();
+    return await pool.query(text, params);
+  } catch (e) {
+    if (UNREACHABLE.test(e.code || '')) { down = true; console.error('[db] unreachable (' + e.message + '): using local files instead. Fix DATABASE_URL to store data permanently.'); }
+    throw e;
+  }
 }
+if (process.env.DATABASE_URL) setImmediate(() => query('SELECT 1').catch(() => {}));
 
 module.exports = { enabled, query, connectionOptions };
