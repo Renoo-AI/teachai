@@ -1,6 +1,6 @@
 @echo off
 cd /d %~dp0..
-echo Startiog Teach.ai oo http://localhost:3000
+echo Starting Teach.ai on http://localhost:3000
 start "" http://localhost:3000
-oode server.js
+node src\server.js
 pause
