@@ -27,7 +27,10 @@ function themeCycle() {
 }
 
 // ---- Sign-in ----
-function showLogin(info = {}) { login(app, start, info); }
+function showLogin(info = {}) { login(app, (newDevice) => {
+  if (location.pathname === '/admin/invitations') location.reload();
+  else start(newDevice);
+}, info); }
 
 function showDisabled() {
   clear(app).append(h('div', { class: 'login' }, h('div', { class: 'stack', style: 'max-width:460px' },
@@ -76,6 +79,7 @@ async function start(newDevice) {
         h('button', { class: 'btn sm lang', type: 'button', 'aria-label': t('Language'), onclick: () => { setLang(state.lang === 'en' ? 'fr' : 'en'); start(); } }, icon('globe'), h('span', { class: 'lbl' }, state.lang === 'en' ? 'FR' : 'EN')),
         h('button', { class: 'btn sm', type: 'button', onclick: themeCycle, 'aria-label': t('Change theme'), title: t('Change theme') }, icon('theme'), h('span', { class: 'lbl' }, t('Theme')))),
       h('a', { class: 'btn sm', href: '/', target: '_blank', rel: 'noopener', 'aria-label': t('View site'), title: t('View site') }, icon('external'), h('span', { class: 'lbl' }, t('View site'))),
+      h('a', { class: 'btn sm', href: '/admin/invitations', 'aria-label': 'Invitation designer', title: 'Invitation designer' }, h('span', { class: 'lbl' }, 'Invitations')),
       h('button', { class: 'btn sm', type: 'button', 'aria-label': t('Sign out'), title: t('Sign out'), onclick: async () => { if (isDirty() && !(await confirmBox({ title: t('Unsaved changes'), text: t('You have unsaved changes. Sign out anyway?'), ok: t('Sign out'), danger: true }))) return; setDirty(false); try { await api('POST', '/logout', {}); } catch { /* ignore */ } showLogin(); } }, icon('logout'), h('span', { class: 'lbl' }, t('Sign out')))));  app.append(h('div', { class: 'shell' }, nav, h('main', { class: 'main', id: 'main', tabindex: '-1' })));
   if (newDevice) toast(t('Signed in from a new device. If that was not you, change ADMIN_PASSWORD now.'), { kind: 'bad', ms: 12000 });
   await go();

@@ -505,6 +505,14 @@ const server = http.createServer(async (req, res) => {
 
     const clean = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, '') : url.pathname;
     if (clean === '/app' && !access.hasAccess(req)) { res.writeHead(302, { location: '/access?next=/app', 'cache-control': 'no-store' }); return res.end(); }
+    if (clean === '/admin/invitations') {
+      if (!admin.ipAllowed(clientIp(req))) return notFound(req, res);
+      if (!admin.authed(req)) return adminPage(req, res);
+      return fs.readFile(path.join(__dirname, '..', 'deliverables', 'vip-invitations.html'), (err, html) => {
+        if (err) return send(res, 500, 'Invitation designer unavailable.', 'text/plain; charset=utf-8');
+        return send(res, 200, html, 'text/html; charset=utf-8');
+      });
+    }
     if (clean === '/admin') return admin.ipAllowed(clientIp(req)) ? adminPage(req, res) : notFound(req, res);
     const page = PAGES[clean];
     if (page) { if (clean === '/' || clean === '/app') metrics.count('visits'); return renderPage(req, res, page); }
