@@ -528,7 +528,12 @@ const server = http.createServer(async (req, res) => {
     return serveStatic(req, res, url.pathname.replace(/^\//, ''));
   } catch (err) {
     if (res.destroyed) return;
-    if (res.headersSent) return res.end(JSON.stringify({ type:'error', error:err.status ? err.message : 'The exam could not be created. Try again with a focused lesson.' })+'\n');
+    if (res.headersSent) {
+      console.error('[generate] failed: ' + (err && err.stack || err));
+      metrics.error('server', err, req.method + ' ' + String(req.url).split('?')[0]);
+      const reason = String(err && err.message || '').slice(0, 200);
+      return res.end(JSON.stringify({ type:'error', error:err.status ? err.message : 'The exam could not be created' + (reason ? ' (' + reason + ')' : '') + '. Try again with a focused lesson.' })+'\n');
+    }
     const status = err.status || 500;
     if (status === 500) { console.error(err); metrics.error('server', err, req.method + ' ' + String(req.url).split('?')[0]); }
     const isPage = req.method === 'GET' && !String(req.url).startsWith('/api/') && String(req.headers.accept || '').includes('text/html');
