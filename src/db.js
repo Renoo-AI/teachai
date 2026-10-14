@@ -1,5 +1,7 @@
 // Optional Postgres (Neon, Supabase...). Set DATABASE_URL to keep exams, the waiting list and contact
 // messages in a free hosted database instead of data/ files, which free hosts wipe on every restart.
+// Render cannot route IPv6: prefer IPv4 addresses when a host has both.
+require('dns').setDefaultResultOrder('ipv4first');
 let pool = null;
 let ready = null;
 
