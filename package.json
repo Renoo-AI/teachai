@@ -6,7 +6,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "node --test tests/*.test.js",
+    "test": "node --require ./tests/setup.cjs --test tests/*.test.js",
     "brand": "node scripts/make-brand.js",
     "coupon": "node scripts/coupon.js"
   },

@@ -139,10 +139,20 @@ function hasAccess(req) {
     if (p.d) {                                    // a device removed by the admin loses access at once
       const dev = (s.coupon.devices || []).find((x) => x.sid === p.d);
       if (!dev) return false;
-      if (Date.now() - dev.last > 5 * 60e3) { dev.last = Date.now(); saveCoupons(loadCoupons()); }
+      if (Date.now() - dev.last > 5 * 60e3) {
+        const all = loadCoupons();
+        const current = (all[p.i]?.devices || []).find(x => x.sid === p.d);
+        if (!current) return false;
+        current.last = Date.now();
+        saveCoupons(all);
+      }
     }
   }
-  if (p.s === 'env' && !String(process.env.TEACHAI_COUPONS || '').split(',').map(normalize).includes(p.i)) return false;
+  if (p.s === 'env') {
+    // Import transfers authority to managed coupons. Re-redeem for a local session.
+    if (Object.hasOwn(loadCoupons(), p.i)) return false;
+    if (!String(process.env.TEACHAI_COUPONS || '').split(',').map(normalize).includes(p.i)) return false;
+  }
   return true;
 }
 

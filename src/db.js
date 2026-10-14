@@ -5,11 +5,25 @@ let ready = null;
 
 const enabled = () => !!process.env.DATABASE_URL;
 
+function connectionOptions(env = process.env) {
+  const connection = new URL(env.DATABASE_URL);
+  const local = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(connection.hostname);
+  // URL SSL parameters must not override certificate verification.
+  for (const name of [...connection.searchParams.keys()]) {
+    if (name.toLowerCase().startsWith('ssl')) connection.searchParams.delete(name);
+  }
+  const ssl = { rejectUnauthorized: true };
+  for (const [option, variable] of [['ca', 'DATABASE_CA_FILE'], ['cert', 'DATABASE_CERT_FILE'], ['key', 'DATABASE_KEY_FILE']]) {
+    if (env[variable]) ssl[option] = require('fs').readFileSync(env[variable], 'utf8');
+  }
+  return { connectionString: connection.toString(), ssl: local ? false : ssl };
+}
+
 function init() {
   if (!ready) {
     const { Pool } = require('pg');
     // Timeouts matter: a database that does not answer must produce an error, never a request that hangs for ever.
-    pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 3, connectionTimeoutMillis: 8000, idleTimeoutMillis: 30000, query_timeout: 15000, ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false } });
+    pool = new Pool({ ...connectionOptions(), max: 3, connectionTimeoutMillis: 8000, idleTimeoutMillis: 30000, query_timeout: 15000 });
     pool.on('error', (e) => console.error('database connection error:', e.message));
     ready = pool.query(`
       CREATE TABLE IF NOT EXISTS exams (id text PRIMARY KEY, data jsonb NOT NULL, updated_at bigint NOT NULL);
@@ -38,4 +52,4 @@ async function query(text, params) {
   return pool.query(text, params);
 }
 
-module.exports = { enabled, query };
+module.exports = { enabled, query, connectionOptions };

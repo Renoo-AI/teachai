@@ -46,6 +46,12 @@ One password (`ADMIN_PASSWORD`, set it in `.env` or in the host's environment; t
 | History | Every sign-in and every change |
 
 Safety: signed `SameSite=Strict` cookie, a header on every write, five wrong passwords lock the address for 15 minutes, an optional `ADMIN_IPS` allow-list, and a new-device warning. Settings, codes and counters are stored in the database when `DATABASE_URL` is set, otherwise in `data/kv/` and `data/coupons.json`.
+
+Importing environment codes into the managed list invalidates their existing environment sessions. Teachers enter the code again to receive a managed session with revocation and device controls.
+
+Public exports allow ten renders per minute per client address and two concurrent renders per server process. Generation allows one pending request per access code, so concurrent requests cannot spend the same remaining quota. These controls assume the existing single-server deployment; multiple replicas require shared limits and atomic quota counters.
+
+Remote Postgres connections verify TLS certificates. For a private CA, set `DATABASE_CA_FILE` to its PEM file; client authentication can use `DATABASE_CERT_FILE` and `DATABASE_KEY_FILE`. SSL parameters in `DATABASE_URL` are ignored so they cannot disable verification. Loopback connections use plaintext.
 ## Run it
 
 Requires Node.js 22.12 or newer.
@@ -64,6 +70,8 @@ DOCX is a real OOXML Word document. Formulas are embedded as rendered images, wh
 The AI has a shared exam-only role, treats lesson and reference content as untrusted data, and rejects code and unsupported actions. Generated questions must pass structural and source-quote validation after at most one correction attempt. This checks structure and quotations, not factual correctness; teachers should review the final paper. Lesson input is limited to 60,000 characters and generation to 40 questions. Browser cancellation also aborts the provider request.
 
 Run `npm test` for AI-boundary, scoring, API, PDF and DOCX checks. `TEACHAI_DATA_DIR` can point an isolated test server at a disposable exam directory.
+
+`npm test` preloads `tests/setup.cjs` to disable `.env` loading, clear deployment credentials and use temporary storage. The regression suite also covers exam validation, coupon import/revocation, pending generation quotas, export limits, uncapped backup enumeration and database TLS configuration. PDF tests still require an installed Chrome or Edge.
 
 ### AI providers
 

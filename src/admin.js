@@ -336,14 +336,20 @@ async function handle(req, res, url, ctx) {
   if (!enabled()) return json(503, { error: 'The admin is switched off. Set ADMIN_PASSWORD on the server to enable it.', disabled: true });
 
   if (sub === '/session' && req.method === 'GET') {
-    const logins = authed(req) ? await kv.get('admin', 'logins', []) : [];
-    return json(200, { enabled: true, authed: authed(req), lastLogin: logins[0] || null, newDevice: logins[0] ? !!logins[0].newDevice : false });
+    const authenticated = authed(req);
+    let logins = [];
+    if (authenticated) {
+      try { logins = await kv.get('admin', 'logins', []); }
+      catch (e) { metrics.error('admin.login-history', e); }
+    }
+    return json(200, { enabled: true, authed: authenticated, lastLogin: logins[0] || null, newDevice: logins[0] ? !!logins[0].newDevice : false });
   }
 
   if (sub === '/login' && req.method === 'POST') {
     const wait = lockedFor(ip);
     if (wait) return json(429, { error: 'Too many wrong passwords.', retryAfter: wait });
     const body = await ctx.readBody(req);
+    if (!body || typeof body.password !== 'string') return json(400, { error: 'Enter your password.' });
     const ok = crypto.timingSafeEqual(sha(body.password), sha(process.env.ADMIN_PASSWORD));
     if (!ok) {
       noteFail(ip);
@@ -354,10 +360,15 @@ async function handle(req, res, url, ctx) {
     fails.delete(ip);
     const ua = String(req.headers['user-agent'] || '').slice(0, 160);
     const fp = crypto.createHash('sha256').update(access.maskIp(ip) + '|' + ua).digest('hex').slice(0, 16);
-    const logins = await kv.get('admin', 'logins', []);
-    const newDevice = logins.length > 0 && !logins.some((l) => l.fp === fp);
-    logins.unshift({ ts: Date.now(), ip: access.maskIp(ip), ua, fp, newDevice });
-    await kv.set('admin', 'logins', logins.slice(0, 30));
+    let newDevice = false;
+    // Sign-in history is diagnostic data, not an authentication dependency.
+    // A storage outage must not reject a correctly verified password.
+    try {
+      const logins = await kv.get('admin', 'logins', []);
+      newDevice = logins.length > 0 && !logins.some((l) => l.fp === fp);
+      logins.unshift({ ts: Date.now(), ip: access.maskIp(ip), ua, fp, newDevice });
+      await kv.set('admin', 'logins', logins.slice(0, 30));
+    } catch (e) { metrics.error('admin.login-history', e); }
     metrics.audit('admin', newDevice ? 'login.new-device' : 'login', access.maskIp(ip));
     const secure = ctx.isHttps(req) ? '; Secure' : '';
     return ctx.send(res, 200, { ok: true, newDevice }, 'application/json; charset=utf-8', {

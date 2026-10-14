@@ -1,3 +1,4 @@
+import { login } from './login.js';
 // Admin entry: sign-in, the navigation shell and the hash router.
 import { h, t, api, clear, state, setLang, toast, fail, mount, isDirty, setDirty, confirmBox, icon } from './core.js';
 import overview from './overview.js';
@@ -26,39 +27,7 @@ function themeCycle() {
 }
 
 // ---- Sign-in ----
-function showLogin(info = {}) {
-  document.title = t('Sign in') + ' · Teach.ai Admin';
-  const err = h('p', { class: 'small', role: 'alert', style: 'color:var(--bad);min-height:1.3em' });
-  const pw = h('input', { type: 'password', autocomplete: 'current-password', required: true, 'aria-label': t('Password'), autofocus: true });
-  const show = h('button', { type: 'button', class: 'btn quiet sm', onclick: () => { pw.type = pw.type === 'password' ? 'text' : 'password'; show.textContent = pw.type === 'password' ? t('Show') : t('Hide'); } }, t('Show'));
-  const go = h('button', { class: 'btn primary', type: 'submit' }, t('Sign in'));
-  let timer = null;
-  const lock = (sec) => {
-    clearInterval(timer);
-    let left = sec;
-    const tick = () => { if (left <= 0) { clearInterval(timer); err.textContent = ''; go.disabled = false; return; } go.disabled = true; err.textContent = t('Too many wrong passwords. Try again in {m}:{s}.', { m: Math.floor(left / 60), s: String(left % 60).padStart(2, '0') }); left--; };
-    tick(); timer = setInterval(tick, 1000);
-  };
-  const form = h('form', {
-    onsubmit: async (e) => {
-      e.preventDefault(); err.textContent = ''; go.disabled = true;
-      try {
-        const r = await fetch('/api/admin/login', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json', 'x-admin': '1' }, body: JSON.stringify({ password: pw.value }) });
-        const d = await r.json().catch(() => ({}));
-        if (r.ok) { start(d.newDevice); return; }
-        if (r.status === 429) lock(d.retryAfter || 900);
-        else { err.textContent = d.left != null && d.left <= 2 ? t('Wrong password. {n} tries left.', { n: d.left }) : t('Wrong password.'); go.disabled = false; pw.select(); }
-      } catch { err.textContent = t('No connection to the server. Check your internet and try again.'); go.disabled = false; }
-    },
-  },
-  h('div', null, h('h1', null, 'Teach.ai'), h('p', { class: 'muted' }, t('Admin sign-in'))),
-  info.expired ? h('div', { class: 'note warn' }, t('Your session ended. Sign in again.')) : null,
-  h('label', { class: 'field' }, h('span', null, t('Password')), h('div', { class: 'row', style: 'flex-wrap:nowrap;gap:6px' }, pw, show)),
-  err, go,
-  h('div', { class: 'row', style: 'justify-content:space-between' }, h('button', { type: 'button', class: 'btn quiet sm', onclick: () => { setLang(state.lang === 'en' ? 'fr' : 'en'); showLogin(info); } }, state.lang === 'en' ? 'Français' : 'English'), h('a', { href: '/', class: 'small' }, t('Back to the site'))));
-  clear(app).append(h('div', { class: 'login' }, form));
-  pw.focus();
-}
+function showLogin(info = {}) { login(app, start, info); }
 
 function showDisabled() {
   clear(app).append(h('div', { class: 'login' }, h('div', { class: 'stack', style: 'max-width:460px' },

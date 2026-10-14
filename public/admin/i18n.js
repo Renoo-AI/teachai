@@ -1,5 +1,17 @@
 // French for the admin. English is the source text: t('English') returns the French below when the language is French.
 export const FR = {
+  "ADMIN WORKSPACE": "ESPACE ADMINISTRATEUR",
+  "Administration": "Administration",
+  "Welcome back.": "Bon retour.",
+  "Sign in to manage your teaching workspace.": "Connectez-vous pour gérer votre espace pédagogique.",
+  "Use your administrator password, not an access code.": "Utilisez votre mot de passe administrateur, pas un code d’accès.",
+  "Private access · Administrator only": "Accès privé · Réservé à l’administrateur",
+  "Caps Lock is on.": "Le verrouillage des majuscules est activé.",
+  "Signing in…": "Connexion…",
+  "Sign-in timed out. Please try again.": "La connexion a expiré. Réessayez.",
+  "Admin sign-in is not configured on this server.": "La connexion administrateur n’est pas configurée sur ce serveur.",
+  "Admin sign-in is unavailable from this address.": "La connexion administrateur est indisponible depuis cette adresse.",
+  "The server could not complete sign-in. Please try again shortly.": "Le serveur n’a pas pu terminer la connexion. Réessayez dans un instant.",
   "0 = no end date": "0 = sans date de fin",
   "0 = unlimited": "0 = illimité",
   "0 keeps every exam forever. Teachers are told in the editor that exams expire.": "0 garde tous les examens pour toujours. Les enseignants sont prévenus dans l'éditeur que les examens expirent.",

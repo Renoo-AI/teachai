@@ -67,18 +67,48 @@ function checkKey(record, key) {
 }
 
 // Replace the editable content of an exam. Keeps id, key and createdAt.
+function editableContent(content, record) {
+  const bad = () => { throw Object.assign(new Error('Invalid exam content.'), { status: 400 }); };
+  const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+  if (!object(content) || !Array.isArray(content.questions) || content.questions.length > 100) bad();
+  if (content.groups != null && (!Array.isArray(content.groups) ||
+      content.groups.length > 30 || content.groups.some(g => !object(g)))) bad();
+  for (const q of content.questions) {
+    if (!object(q) || !['mcq', 'tf', 'short', 'essay'].includes(q.type)) bad();
+    if (typeof q.prompt !== 'string' || q.prompt.length > 30000) bad();
+    if (typeof q.points !== 'number' || !Number.isFinite(q.points) || q.points < 0 || q.points > 100) bad();
+    if (q.choices != null && (!Array.isArray(q.choices) || q.choices.length > 6 ||
+        q.choices.some(c => typeof c !== 'string' || c.length > 4000))) bad();
+    for (const k of ['answer', 'rubric', 'source', 'topic']) {
+      if (q[k] != null && typeof q[k] !== 'string') bad();
+    }
+  }
+  const safe = require('./export').snapshot(content, record);
+  safe.showMargin = content.showMargin !== false;
+  safe.nbPages = String(content.nbPages ?? '').slice(0, 20);
+  const ids = new Set();
+  safe.questions.forEach((q, i) => {
+    const raw = content.questions[i];
+    let id = typeof raw.id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(raw.id)
+      ? raw.id : crypto.randomBytes(12).toString('hex');
+    while (ids.has(id)) id = crypto.randomBytes(12).toString('hex');
+    ids.add(id);
+    Object.assign(q, { id, topic: String(raw.topic ?? '').slice(0, 1000), flagged: !!raw.flagged });
+  });
+  return safe;
+}
+
 async function save(id, key, content) {
   const record = await read(id);
   if (!record) return { status: 404 };
   if (!checkKey(record, key)) return { status: 403 };
   const next = {
-    ...content,
+    ...record,
+    ...editableContent(content, record),
     id,
     editKeyHash: record.editKeyHash,
     createdAt: record.createdAt,
     updatedAt: Date.now(),
-    ...(record.by ? { by: record.by } : {}),
-    ...(record.hidden ? { hidden: true } : {}),
   };
   if (db.enabled()) await db.query('UPDATE exams SET data = $2, updated_at = $3 WHERE id = $1', [id, next, next.updatedAt]);
   else fs.writeFileSync(fileFor(id), JSON.stringify(next));
@@ -114,7 +144,7 @@ function summarize(r) {
 
 async function listAll() {
   if (db.enabled()) {
-    const r = await db.query("SELECT id, data->>'title' AS title, data->'tpl' AS tpl, COALESCE(jsonb_array_length(data->'questions'), 0) AS questions, (data->>'demo') = 'true' AS demo, (data->>'hidden') = 'true' AS hidden, data->>'by' AS by, (data->>'createdAt')::bigint AS created, updated_at FROM exams ORDER BY updated_at DESC LIMIT 5000");
+    const r = await db.query("SELECT id, data->>'title' AS title, data->'tpl' AS tpl, CASE WHEN jsonb_typeof(data->'questions') = 'array' THEN jsonb_array_length(data->'questions') ELSE 0 END AS questions, (data->>'demo') = 'true' AS demo, (data->>'hidden') = 'true' AS hidden, data->>'by' AS by, (data->>'createdAt')::bigint AS created, updated_at FROM exams ORDER BY updated_at DESC LIMIT 5000");
     return r.rows.map((x) => { const t = x.tpl || {}; return { id: x.id, title: x.title || '', subject: t.subject || '', level: t.level || '', lang: t.lang || '', kind: t.kind || '', questions: Number(x.questions), demo: !!x.demo, hidden: !!x.hidden, by: x.by || '', createdAt: Number(x.created) || 0, updatedAt: Number(x.updated_at) }; });
   }
   const out = [];
@@ -153,9 +183,16 @@ async function setHidden(id, hidden) {
 
 // Whole records for a backup (editKeyHash included, so a restored exam keeps its edit link).
 async function dumpAll() {
-  const ids = (await listAll()).map((x) => x.id);
+  if (db.enabled()) {
+    const result = await db.query('SELECT data FROM exams ORDER BY id');
+    return result.rows.map(row => row.data);
+  }
   const out = [];
-  for (const id of ids) { const r = await read(id); if (r) out.push(r); }
+  for (const name of fs.readdirSync(DATA_DIR)) {
+    if (!/^[a-z0-9]{10}\.json$/.test(name)) continue;
+    const record = await read(name.slice(0, -5));
+    if (record) out.push(record);
+  }
   return out;
 }
 async function restoreAll(records) {

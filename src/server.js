@@ -31,6 +31,32 @@ const MAX_BODY = 15 * 1024 * 1024; // logos and images travel inside the exam JS
 // They load in parallel and a failure only logs: the site must stay up even when the database is not reachable.
 const ready = Promise.allSettled([settings.init(), metrics.init(), access.init()]).then((rs) => rs.forEach((r) => { if (r.status === 'rejected') console.error('start-up load failed:', r.reason && r.reason.message); }));
 
+const exportClients = new Map();
+let activeExports = 0;
+async function boundedExport(ip, exam, format, mode) {
+  const now = Date.now();
+  for (const [key, slot] of exportClients) {
+    if (slot.until <= now) exportClients.delete(key);
+  }
+  let slot = exportClients.get(ip);
+  if (!slot) {
+    if (exportClients.size >= 10000) {
+      throw Object.assign(new Error('Exports are busy. Try again shortly.'), { status: 503 });
+    }
+    slot = { until: now + 60000, count: 0 };
+    exportClients.set(ip, slot);
+  }
+  if (slot.count >= 10 || activeExports >= 2) {
+    throw Object.assign(new Error('Too many exports. Try again shortly.'), { status: 429 });
+  }
+  slot.count++;
+  activeExports++;
+  try { return await exporter.render(exam, format, mode); }
+  finally { activeExports--; }
+}
+
+const generatingCodes = new Set();
+
 const genHits = new Map(); // ip -> [timestamps]
 
 function rateOk(ip) {
@@ -253,7 +279,7 @@ async function apiRoutes(req, res, url, who) {
     if(b.exam&&!editable)return send(res,403,{error:'An edit key is required to export unsaved changes.'});
     const exam=exporter.snapshot(editable&&b.exam?b.exam:record,record);
     const mode=b.mode==='key'?'key':'student';
-    const data=await exporter.render(exam,b.format,mode);
+    const data=await boundedExport(ip,exam,b.format,mode);
     metrics.count(b.format);
     const types={pdf:'application/pdf',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',html:'text/html; charset=utf-8'};
     const filename=(exam.title||'exam').replace(/[^a-z0-9]+/gi,'-').slice(0,80)||'exam';
@@ -263,83 +289,91 @@ async function apiRoutes(req, res, url, who) {
 
   // Create an exam from a lesson.
   if (req.method === 'POST' && url.pathname === '/api/exams/generate') {
-    if (!rateOk(ip)) return send(res, 429, { error: 'Too many exams from this device. Try again in an hour.' });
-    const quota = access.checkQuota(req);
-    if (!quota.ok) return send(res, 429, { error: quota.reason === 'day' ? `This access code has reached its limit of ${quota.limit} exams today. Try again tomorrow.` : `This access code has reached its limit of ${quota.limit} exams this month.`, quota: quota.reason });
-    const b = await readBody(req);
-    const lesson = String(b.lesson || '').trim();
-    if (lesson.length < 200) return send(res, 400, { error: 'The lesson needs at least a few paragraphs of text.' });
-    if (lesson.length > 60000) return send(res, 400, { error: 'Use a focused lesson of at most 60,000 characters.' });
-    const o = b.options || {};
-    const tin = o.tpl || {};
-    const lang = Object.keys(TPL.LANGS).includes(tin.lang) ? tin.lang : 'fr';
-    const subject = TPL.findSubject(tin.subject);
-    const level = TPL.findLevel(tin.level);
-    const kind = TPL.KINDS[tin.kind] ? tin.kind : 'control';
-    const num = Math.max(0, Math.min(9, parseInt(tin.num, 10) || 0));
-    const plan = TPL.plan(subject.id, level.id);
-    const nEx = Math.max(1, Math.min(6, parseInt(tin.exercises, 10) || plan.ex));
-    const tpl = { subject: subject.id, level: level.id, kind, num, lang, exercises: nEx };
-    const options = {
-      counts: { mcq: 0, tf: 0, short: 0, essay: 0, ...(o.counts || {}) },
-      points: { mcq: 1, tf: 1, short: 2, essay: 5, ...(o.points || {}) },
-      choices: [3, 4, 5].includes(+o.choices) ? +o.choices : 4,
-      difficulty: String(o.difficulty || 'mixed'),
-      topics: Array.isArray(o.topics) ? o.topics.slice(0, 20).map(String) : [],
-      tpl,
-      total: 20,
-      supportText: !!plan.support && b.useSupport !== false,
-    };
-    for (const type of ['mcq', 'tf', 'short', 'essay']) {
-      const count = Number(options.counts[type]);
-      const weight = Number(options.points[type]);
-      if (!Number.isInteger(count) || count < 0 || count > 30 || !Number.isFinite(weight) || weight <= 0 || weight > 20) return send(res, 400, { error: 'Use 0–30 questions per type and positive question weights up to 20.' });
-      options.counts[type] = count; options.points[type] = weight;
+    if (codeId && generatingCodes.has(codeId)) {
+      return send(res, 409, { error: 'An exam is already being generated for this code.' });
     }
-    options.counts = Object.fromEntries(['mcq', 'tf', 'short', 'essay'].map((t) => [t, options.counts[t]]));
-    const countTotal = Object.values(options.counts).reduce((a, b) => a + b, 0);
-    if (countTotal < nEx || countTotal > 40) return send(res, 400, { error: 'Choose at least one question per exercise and no more than 40 questions in total.' });
-    options.difficulty = ['easy', 'medium', 'hard', 'mixed'].includes(options.difficulty.toLowerCase()) ? options.difficulty.toLowerCase() : 'mixed';
-    if (b.refPaper) {
-      try {
-        const a = await papers.analyze(String(b.refPaper));
-        options.ref = papers.asReference(a, String(b.refLabel || '').slice(0, 160));
-      } catch { /* the paper is optional: carry on with the standard template */ }
+    if (codeId) generatingCodes.add(codeId);
+    try {
+      if (!rateOk(ip)) return send(res, 429, { error: 'Too many exams from this device. Try again in an hour.' });
+      const quota = access.checkQuota(req);
+      if (!quota.ok) return send(res, 429, { error: quota.reason === 'day' ? `This access code has reached its limit of ${quota.limit} exams today. Try again tomorrow.` : `This access code has reached its limit of ${quota.limit} exams this month.`, quota: quota.reason });
+      const b = await readBody(req);
+      const lesson = String(b.lesson || '').trim();
+      if (lesson.length < 200) return send(res, 400, { error: 'The lesson needs at least a few paragraphs of text.' });
+      if (lesson.length > 60000) return send(res, 400, { error: 'Use a focused lesson of at most 60,000 characters.' });
+      const o = b.options || {};
+      const tin = o.tpl || {};
+      const lang = Object.keys(TPL.LANGS).includes(tin.lang) ? tin.lang : 'fr';
+      const subject = TPL.findSubject(tin.subject);
+      const level = TPL.findLevel(tin.level);
+      const kind = TPL.KINDS[tin.kind] ? tin.kind : 'control';
+      const num = Math.max(0, Math.min(9, parseInt(tin.num, 10) || 0));
+      const plan = TPL.plan(subject.id, level.id);
+      const nEx = Math.max(1, Math.min(6, parseInt(tin.exercises, 10) || plan.ex));
+      const tpl = { subject: subject.id, level: level.id, kind, num, lang, exercises: nEx };
+      const options = {
+        counts: { mcq: 0, tf: 0, short: 0, essay: 0, ...(o.counts || {}) },
+        points: { mcq: 1, tf: 1, short: 2, essay: 5, ...(o.points || {}) },
+        choices: [3, 4, 5].includes(+o.choices) ? +o.choices : 4,
+        difficulty: String(o.difficulty || 'mixed'),
+        topics: Array.isArray(o.topics) ? o.topics.slice(0, 20).map(String) : [],
+        tpl,
+        total: 20,
+        supportText: !!plan.support && b.useSupport !== false,
+      };
+      for (const type of ['mcq', 'tf', 'short', 'essay']) {
+        const count = Number(options.counts[type]);
+        const weight = Number(options.points[type]);
+        if (!Number.isInteger(count) || count < 0 || count > 30 || !Number.isFinite(weight) || weight <= 0 || weight > 20) return send(res, 400, { error: 'Use 0–30 questions per type and positive question weights up to 20.' });
+        options.counts[type] = count; options.points[type] = weight;
+      }
+      options.counts = Object.fromEntries(['mcq', 'tf', 'short', 'essay'].map((t) => [t, options.counts[t]]));
+      const countTotal = Object.values(options.counts).reduce((a, b) => a + b, 0);
+      if (countTotal < nEx || countTotal > 40) return send(res, 400, { error: 'Choose at least one question per exercise and no more than 40 questions in total.' });
+      options.difficulty = ['easy', 'medium', 'hard', 'mixed'].includes(options.difficulty.toLowerCase()) ? options.difficulty.toLowerCase() : 'mixed';
+      if (b.refPaper) {
+        try {
+          const a = await papers.analyze(String(b.refPaper));
+          options.ref = papers.asReference(a, String(b.refLabel || '').slice(0, 160));
+        } catch { /* the paper is optional: carry on with the standard template */ }
+      }
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(Object.assign(new Error('Writing took too long. Try fewer questions or another model.'),{status:504})), 150000);
+      res.on('close', () => { if (!res.writableEnded) controller.abort(); });
+      const streaming = url.searchParams.get('stream') === '1';
+      const progress = (stage) => { if (streaming && !res.destroyed) res.write(JSON.stringify({ type:'stage', stage }) + '\n'); };
+      if (streaming) { res.writeHead(200, {'content-type':'application/x-ndjson; charset=utf-8','cache-control':'no-store','x-accel-buffering':'no'}); progress('drafting'); }
+      let generated;
+      try { generated = await generateQuestions(lesson, options, b.ai, { signal:controller.signal, onProgress:progress }); controller.signal.throwIfAborted(); }
+      finally { clearTimeout(timeout); }
+      const { questions, demo } = generated;
+      const L = TPL.L[lang];
+      const duration = Math.max(15, Math.min(300, parseInt(tin.duration, 10) || (options.ref && options.ref.usable && options.ref.minutes) || plan.dur[kind === 'synthese' ? 'synthese' : 'control']));
+      const exam = {
+        title: String(b.title || TPL.kindTitle(kind, num, lang)).slice(0, 120),
+        tpl,
+        groups: effectivePlan(options).titles.map((title) => ({ title })),
+        school: String(b.header?.school || '').slice(0, 160), subject: TPL.subjectLabel(subject.id, level.id, lang), className: level[lang] || level.fr,
+        examDate: '', teacher: String(b.header?.teacher || '').slice(0, 120), coef: (options.ref && options.ref.usable && options.ref.coef) || plan.coef, year: TPL.schoolYear(),
+        duration: TPL.fmtDuration(duration, lang),
+        instructions: L.instructions,
+        support: plan.support && b.useSupport !== false ? lesson : '',
+        design: TPL.DESIGNS.includes(b.design) ? b.design : TPL.defaultDesign(level.id, lang), nbPages: '',
+        paper: 'A4', showMargin: true, answerSpace: b.answerSpace !== false, logo: null,
+        options, questions, demo,
+        lessonText: lesson,
+        ...(codeId ? { by: codeId } : {}),
+      };
+      if (res.destroyed) return;
+      const created = await store.create(exam);
+      metrics.count('exams'); metrics.count('subj', subject.id); metrics.count('lvl', level.id); metrics.count('lang', lang);
+      if (codeId) metrics.count('codes', codeId, { exams: 1 });
+      const response = { id: created.id, editKey: created.editKey, exam: viewOf({ ...created.exam, lessonText: undefined }), demo, model: demo ? null : MODEL(b.ai) };
+      if (streaming) { progress('complete'); return res.end(JSON.stringify({ type:'complete', ...response })+'\n'); }
+      return send(res, 201, response);
+    } finally {
+      if (codeId) generatingCodes.delete(codeId);
     }
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(Object.assign(new Error('Writing took too long. Try fewer questions or another model.'),{status:504})), 150000);
-    res.on('close', () => { if (!res.writableEnded) controller.abort(); });
-    const streaming = url.searchParams.get('stream') === '1';
-    const progress = (stage) => { if (streaming && !res.destroyed) res.write(JSON.stringify({ type:'stage', stage }) + '\n'); };
-    if (streaming) { res.writeHead(200, {'content-type':'application/x-ndjson; charset=utf-8','cache-control':'no-store','x-accel-buffering':'no'}); progress('drafting'); }
-    let generated;
-    try { generated = await generateQuestions(lesson, options, b.ai, { signal:controller.signal, onProgress:progress }); controller.signal.throwIfAborted(); }
-    finally { clearTimeout(timeout); }
-    const { questions, demo } = generated;
-    const L = TPL.L[lang];
-    const duration = Math.max(15, Math.min(300, parseInt(tin.duration, 10) || (options.ref && options.ref.usable && options.ref.minutes) || plan.dur[kind === 'synthese' ? 'synthese' : 'control']));
-    const exam = {
-      title: String(b.title || TPL.kindTitle(kind, num, lang)).slice(0, 120),
-      tpl,
-      groups: effectivePlan(options).titles.map((title) => ({ title })),
-      school: String(b.header?.school || '').slice(0, 160), subject: TPL.subjectLabel(subject.id, level.id, lang), className: level[lang] || level.fr,
-      examDate: '', teacher: String(b.header?.teacher || '').slice(0, 120), coef: (options.ref && options.ref.usable && options.ref.coef) || plan.coef, year: TPL.schoolYear(),
-      duration: TPL.fmtDuration(duration, lang),
-      instructions: L.instructions,
-      support: plan.support && b.useSupport !== false ? lesson : '',
-      design: TPL.DESIGNS.includes(b.design) ? b.design : TPL.defaultDesign(level.id, lang), nbPages: '',
-      paper: 'A4', showMargin: true, answerSpace: b.answerSpace !== false, logo: null,
-      options, questions, demo,
-      lessonText: lesson,
-      ...(codeId ? { by: codeId } : {}),
-    };
-    if (res.destroyed) return;
-    const created = await store.create(exam);
-    metrics.count('exams'); metrics.count('subj', subject.id); metrics.count('lvl', level.id); metrics.count('lang', lang);
-    if (codeId) metrics.count('codes', codeId, { exams: 1 });
-    const response = { id: created.id, editKey: created.editKey, exam: viewOf({ ...created.exam, lessonText: undefined }), demo, model: demo ? null : MODEL(b.ai) };
-    if (streaming) { progress('complete'); return res.end(JSON.stringify({ type:'complete', ...response })+'\n'); }
-    return send(res, 201, response);
   }
 
   // Real papers of the collection: list for a class and subject, preview as PDF, analyse the structure.

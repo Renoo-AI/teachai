@@ -25,6 +25,28 @@ test('admin: sign-in, CSRF header, codes and devices, quotas, features, maintena
     const page = await raw('/admin'); assert.equal(page.status, 200); assert.match(page.headers.get('x-robots-tag'), /noindex/);
     assert.match(await (await raw('/robots.txt')).text(), /Disallow: \/admin/);
 
+    // Authentication must survive a failure in optional login-history storage.
+    const kv = require('../src/kv');
+    const originalGet = kv.get, originalSet = kv.set;
+    try {
+      for (const operation of ['get', 'set']) {
+        kv.get = async (...args) => {
+          if (operation === 'get' && args[0] === 'admin') throw new Error('Fixture history outage');
+          return originalGet(...args);
+        };
+        kv.set = async (...args) => {
+          if (operation === 'set' && args[0] === 'admin') throw new Error('Fixture history outage');
+          return originalSet(...args);
+        };
+        const response = await raw('/api/admin/login', { method: 'POST', body: { password: 'correct horse battery' } });
+        assert.equal(response.status, 200);
+        const session = await raw('/api/admin/session', { cookie: cookieOf(response) });
+        assert.equal(session.status, 200);
+        assert.equal((await session.json()).authed, true);
+      }
+    } finally { kv.get = originalGet; kv.set = originalSet; }
+    assert.equal((await raw('/api/admin/login', { method: 'POST', body: { password: {} } })).status, 400);
+
     // Wrong password, then the right one
     const bad = await raw('/api/admin/login', { method: 'POST', body: { password: 'nope' } }); assert.equal(bad.status, 401);
     const ok = await raw('/api/admin/login', { method: 'POST', body: { password: 'correct horse battery' } }); assert.equal(ok.status, 200);
